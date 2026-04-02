@@ -2,66 +2,79 @@ import streamlit as st
 import base64
 import os
 
-# --- 1. CONFIGURAÇÃO DA PÁGINA ---
+# --- 1. CONFIGURAÇÃO DE PÁGINA ---
 st.set_page_config(page_title="WAVE MEASURE PRO", layout="wide")
 
-def img_to_b64(name):
-    if os.path.exists(name):
-        with open(name, "rb") as f:
-            return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
-    return ""
+def get_base64(file_name):
+    """Lê o ficheiro e converte para código para o fundo não falhar"""
+    if os.path.exists(file_name):
+        with open(file_name, "rb") as f:
+            return base64.b64encode(f.read()).decode()
+    return None
 
-# Carregar as peças do teu design
-hero_b64 = img_to_b64("hero7.png")
-logo_b64 = img_to_b64("logo.png")
-btn1 = img_to_b64("btn_athletes.png")
-btn2 = img_to_b64("btn_explore.png")
-btn3 = img_to_b64("btn_photo_video.png")
+# Carregar imagens (Garante que os nomes no GitHub são estes e em minúsculas)
+hero = get_base64("hero7.png")
+logo = get_base64("logo.png")
+btn1 = get_base64("btn_athletes.png")
+btn2 = get_base64("btn_explore.png")
+btn3 = get_base64("btn_photo_video.png")
 
-# --- 2. CSS "BLINDADO" (PARA MATAR O MOSAICO E PARTIDAS DO BROWSER) ---
+# --- 2. CSS "THE GAME CHANGER" (PARA MATAR O MOSAICO) ---
 st.markdown(f"""
     <style>
-    /* Remove todo o lixo do Streamlit */
-    [data-testid="stHeader"], [data-testid="stSidebar"], footer {{display: none !important;}}
-    .block-container {{padding: 0 !important; max-width: 100% !important;}}
+    /* Esconder tudo o que é do Streamlit */
+    header, footer, [data-testid="stHeader"], [data-testid="stSidebar"] {{display: none !important;}}
     
-    /* FIXA O FUNDO: SEM MOSAICO, SEM REPETIÇÃO */
-    .stApp {{
-        background-image: url("{hero_b64}");
+    /* FORÇAR O FUNDO ÚNICO E FIXO */
+    [data-testid="stAppViewContainer"] {{
+        background-image: url("data:image/png;base64,{hero}") !important;
         background-size: cover !important;
         background-position: center center !important;
         background-repeat: no-repeat !important;
         background-attachment: fixed !important;
     }}
 
-    /* CRIA A MOLDURA DO TELEMÓVEL NO CENTRO DO MAC PRO */
-    .mobile-wrapper {{
+    /* REMOVER O FUNDO CINZENTO DO STREAMLIT */
+    .stApp {{ background: transparent !important; }}
+
+    /* CONTENTOR VERTICAL (A TUA APP) */
+    .mobile-ui {{
         width: 100%;
-        max-width: 450px; /* Largura de um telemóvel */
-        min-height: 100vh;
+        max-width: 420px;
         margin: 0 auto;
+        min-height: 100vh;
         display: flex;
         flex-direction: column;
         align-items: center;
-        background: rgba(0,0,0,0.3); /* Overlay suave para o design respirar */
-        padding: 40px 20px;
+        padding: 80px 20px;
+        background: rgba(0,0,0,0.2); /* Sombra muito leve */
     }}
 
-    .logo-main {{ width: 180px; margin-bottom: 60px; }}
+    .logo-img {{ width: 180px; margin-bottom: 60px; }}
+    
+    .button-container {{ width: 100%; margin-bottom: 12px; cursor: pointer; }}
+    .button-container img {{ 
+        width: 100%; 
+        display: block; 
+        transition: filter 0.3s, transform 0.2s; 
+    }}
+    .button-container img:hover {{ 
+        filter: brightness(0.5); 
+        transform: scale(0.98); 
+    }}
 
-    /* BOTÕES COM EFEITO DE ESCURECER (50% BRIGHTNESS) */
-    .btn-wrap {{ width: 100%; margin-bottom: 15px; cursor: pointer; }}
-    .btn-wrap img {{ width: 100%; display: block; transition: 0.3s; }}
-    .btn-wrap img:hover {{ filter: brightness(0.5); transform: scale(0.98); }}
-
-    .copy {{ color: rgba(255,255,255,0.3); font-size: 10px; margin-top: auto; letter-spacing: 1px; }}
+    .copy {{ color: rgba(255,255,255,0.4); font-size: 10px; margin-top: auto; letter-spacing: 1px; }}
     </style>
 
-    <div class="mobile-wrapper">
-        <img src="{logo_b64}" class="logo-main">
-        <div class="btn-wrap"><img src="{btn1}"></div>
-        <div class="btn-wrap"><img src="{btn2}"></div>
-        <div class="btn-wrap"><img src="{btn3}"></div>
+    <div class="mobile-ui">
+        <img src="data:image/png;base64,{logo}" class="logo-img">
+        <div class="button-container"><img src="data:image/png;base64,{btn1}"></div>
+        <div class="button-container"><img src="data:image/png;base64,{btn2}"></div>
+        <div class="button-container"><img src="data:image/png;base64,{btn3}"></div>
         <div class="copy">© 2026 JORGE LEAL | WAVE MEASURE</div>
     </div>
     """, unsafe_allow_html=True)
+
+# Mensagem de erro caso os ficheiros não existam (Só aparece se faltar algo no GitHub)
+if not hero or not logo:
+    st.error("ERRO CRÍTICO: Verifica se os ficheiros 'hero7.png' e 'logo.png' estão na raiz do GitHub.")
